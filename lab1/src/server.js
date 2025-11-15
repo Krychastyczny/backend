@@ -70,12 +70,12 @@ app.get(
 app.get(
   '/tasks/:id',
   asyncHandler(async (req, res) => {
-    const id = Number.parseInt(req.params.id, 10);
-    if (Number.isNaN(id)) {
-      return res.status(400).json({ error: 'Task id must be a number' });
+    const id = Number(req.params.id);
+    if (!Number.isInteger(id) || id <= 0) {
+      return res.status(400).json({ error: 'Task id must be a positive integer' });
     }
     const tasks = await readTasks();
-    const task = tasks.find((t) => t.id === id);
+    const task = tasks.find((t) => Number(t.id) === id);
     if (!task) {
       return res.status(404).json({ error: 'Task not found', id });
     }
@@ -116,9 +116,9 @@ app.post(
 app.put(
   '/tasks/:id',
   asyncHandler(async (req, res) => {
-    const taskId = Number.parseInt(req.params.id, 10);
-    if (Number.isNaN(taskId)) {
-      return res.status(400).json({ error: 'Task id must be a number' });
+    const taskId = Number(req.params.id);
+    if (!Number.isInteger(taskId) || taskId <= 0) {
+      return res.status(400).json({ error: 'Task id must be a positive integer' });
     }
 
     const { title, description, completed } = req.body ?? {};
@@ -151,7 +151,7 @@ app.put(
     }
 
     const tasks = await readTasks();
-    const index = tasks.findIndex((task) => task.id === taskId);
+    const index = tasks.findIndex((task) => Number(task.id) === taskId);
     if (index === -1) {
       return res.status(404).json({ error: 'Task not found', id: taskId });
     }
@@ -177,12 +177,12 @@ app.put(
 app.delete(
   '/tasks/:id',
   asyncHandler(async (req, res) => {
-    const id = Number.parseInt(req.params.id, 10);
-    if (Number.isNaN(id)) {
-      return res.status(400).json({ error: 'Task id must be a number' });
+    const id = Number(req.params.id);
+    if (!Number.isInteger(id) || id <= 0) {
+      return res.status(400).json({ error: 'Task id must be a positive integer' });
     }
     const tasks = await readTasks();
-    const index = tasks.findIndex((task) => task.id === id);
+    const index = tasks.findIndex((task) => Number(task.id) === id);
     if (index === -1) {
       return res.status(404).json({ error: 'Task not found', id });
     }
