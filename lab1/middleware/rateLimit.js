@@ -1,4 +1,5 @@
 const rateLimit = require('express-rate-limit');
+const { ipKeyGenerator } = rateLimit;
 
 /**
  * Globalny limiter – 100 requestów na 15 minut
@@ -11,6 +12,7 @@ const globalLimiter = rateLimit({
   },
   standardHeaders: true, // Zwraca info o limicie w headerach
   legacyHeaders: false,
+  skip: (req) => req.path === "/health",
 });
 
 /**
@@ -18,12 +20,28 @@ const globalLimiter = rateLimit({
  */
 const authLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minuta
-  max: 5, // maksymalnie 5 prób
+  max: 10, // maksymalnie 10 prób
   message: {
     error: 'Zbyt wiele prób logowania. Poczekaj minutę.',
   },
   standardHeaders: true,
   legacyHeaders: false,
+  skipFailedRequests: true,
+  keyGenerator: (req) => {
+    const email = req.body.email;
+    const ipKey = ipKeyGenerator(req.ip);
+    return `${ipKey}:${email}`;
+  },
 });
 
-module.exports = { globalLimiter, authLimiter };
+const healthLimiter = rateLimit({
+    windowMs: 1000,
+    max: 20,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: {
+        error: "Zbyt wiele requestow. Sprobuj ponownie za chwile.",
+    },
+});
+
+module.exports = { globalLimiter, authLimiter, healthLimiter };
